@@ -95,7 +95,7 @@ class TTA:
       landmarks_per_frame = results2landmarks(results, draw_landsmarks=self.flip is None)
       self.landmarks_sliding[:-1] = self.landmarks_sliding[1:]
       self.landmarks_sliding[-1] = landmarks_per_frame
-      landmarks_sliding_input = torch.from_numpy(self.landmarks_sliding[None, :, :]).cuda().float()
+      landmarks_sliding_input = torch.from_numpy(self.landmarks_sliding[None, :, :]).cpu().float()
       logits = model(landmarks_sliding_input)
       probas = F.softmax(logits).cpu().detach().numpy()
       return probas
@@ -104,11 +104,12 @@ class TTA:
 graph = aagcn.Graph(adj_mat.num_node, adj_mat.self_link, adj_mat.inward, adj_mat.outward, adj_mat.neighbor)
 model = aagcn.Model(num_class=CFG.num_classes, num_point=21, num_person=1, graph=graph, drop_out=0.5, in_channels=3)
 
-model.cuda() 
+model.cuda() #cuda
 model.eval()
-MODEL_PATH = os.path.join(curr_dir, "trained_models/3_AAGCN_Focal_seqlen32_release_SAM_joints1_joints2_ori/f10.8439268867924529_valloss246.87600708007812_epoch12.pth")
-
-model.load_state_dict(torch.load(MODEL_PATH)["model_state_dict"])
+MODEL_PATH = os.path.join(curr_dir, "trained_models/3_AAGCN_Focal_seqlen32_release_SAM_joints1_joints2_ori/f10.8439268867924529_valloss246.pth") #87600708007812_epoch12
+#MODEL_PATH = os.path.join(curr_dir, "trained_models/2LSTM_Focal_seqlen32_no_release_SAM_joints1_joints2_/f10.37724935732647813_valloss382.89801025390625_epoch2.pth") #87600708007812_epoch12
+#model.load_state_dict(torch.load(MODEL_PATH)["model_state_dict"])
+model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu'))["model_state_dict"])
 
 NUM2CLASSES_GER = {
     0: "Greifen",
@@ -139,7 +140,8 @@ class_number_remap = {
 }
 
 cap = cv2.VideoCapture(os.path.join(curr_dir, "data/video_example/2.mp4"))
-gt_data = pd.read_csv(os.path.join(curr_dir, "data/video_example/2.csv"), squeeze = True)
+gt_data = pd.read_csv(os.path.join(curr_dir, "data/video_example/2.csv"))#, squeeze = True)
+gt_data = gt_data.squeeze('columns')
 
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
@@ -158,7 +160,7 @@ argmax_before = 2
 accum_frames = 0
 
 fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-out = cv2.VideoWriter('output.mp4', fourcc, 24.0, (1280,720))
+out = cv2.VideoWriter('output2.mp4', fourcc, 24.0, (1280,720))
 
 i = 0
 while cap.isOpened():
