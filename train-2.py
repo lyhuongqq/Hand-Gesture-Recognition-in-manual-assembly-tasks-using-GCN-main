@@ -54,8 +54,8 @@ def train_func(model, data_loader, criterion, optimizer, scheduler, epoch, log_d
     t0 = time.time()
     loss_total = 0
     for i, (inputs, labels) in enumerate(data_loader):
-        labels = labels.cpu().long()
-        inputs = inputs.cpu().float()
+        labels = labels.cuda().long()
+        inputs = inputs.cuda().float()
 
         last_label = labels[:, -1, :]
         last_label = torch.argmax(last_label, 1)
@@ -104,8 +104,8 @@ def eval_func(model, criterion, data_loader, epoch, log_data):
     iters = len(data_loader)
     with torch.no_grad():
         for i, (inputs, labels) in enumerate(data_loader):
-            labels = labels.cpu().long()
-            inputs = inputs.cpu().float()
+            labels = labels.cuda().long()
+            inputs = inputs.cuda().float()
 
             last_label = labels[:, -1, :]
             last_label = torch.argmax(last_label, 1)
@@ -162,12 +162,13 @@ def train_eval():
         model = msg3d.Model(num_class=6, num_point=21, num_person=1, num_gcn_scales=13, num_g3d_scales=6, graph=msg3d.AdjMatrixGraph)
 
     start_epoch = 0
-    model.cpu()
-    print(summary(model, input_size=(CFG.batch_size, CFG.sequence_length, 21 * CFG.num_feats), device="cpu"))
+    model.cuda()
+    #print(summary(model, (CFG.sequence_length, 21, CFG.num_feats))) #AGCN, ST-GCN
+    print(summary(model, input_size=(CFG.batch_size, CFG.sequence_length, 21 * CFG.num_feats), device="cuda")) #LSTM
 
     if CFG.loss_fn == "BCE":
         class_weights = class_weight.compute_class_weight('balanced', np.unique(df_train["LABEL"]), df_train["LABEL"])
-        class_weights = torch.tensor(class_weights).cpu().float()
+        class_weights = torch.tensor(class_weights).cuda().float()
         criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     if CFG.loss_fn == "Focal":
