@@ -16,8 +16,8 @@ from data.handpose_dataset import HandPoseDatasetNumpy, df_to_numpy
 from data.get_data_from_csv import get_train_data, get_val_data
 from config import CFG
 from utils import training_supervision, adj_mat
-from torchinfo import summary
-
+#from torchinfo import summary #LSTM
+from torchsummary import summary #ST CONV, AGCNN
 is_cuda = torch.cuda.is_available()
 
 if is_cuda:
@@ -124,10 +124,12 @@ def eval_func(model, criterion, data_loader, epoch, log_data):
     preds = np.argmax(np.concatenate(preds), axis=1)
     groundtruth = np.concatenate(groundtruth)
     f1_val_micro = f1_score(groundtruth, preds, average="micro")
+    f1_val_macro = f1_score(groundtruth, preds, average="macro")
     
     report = classification_report(groundtruth, preds, target_names=CFG.classes, digits=3, output_dict=True)
     log_data['val_loss'].append(loss_total / iters)
     log_data['val_f1_micro'].append(f1_val_micro)
+    log_data['val_f1_macro'].append(f1_val_macro)
     log_data['classification_report'].append(report)
     
     writer.add_scalar('Loss/Validation', loss_total / iters, global_step)
@@ -163,8 +165,8 @@ def train_eval():
 
     start_epoch = 0
     model.cuda()
-    #print(summary(model, (CFG.sequence_length, 21, CFG.num_feats))) #AGCN, ST-GCN
-    print(summary(model, input_size=(CFG.batch_size, CFG.sequence_length, 21 * CFG.num_feats), device="cuda")) #LSTM
+    print(summary(model, (CFG.sequence_length, 21, CFG.num_feats))) #AGCN, STCONV
+    #print(summary(model, input_size=(CFG.batch_size, CFG.sequence_length, 21 * CFG.num_feats), device="cuda")) #LSTM
 
     if CFG.loss_fn == "BCE":
         class_weights = class_weight.compute_class_weight('balanced', np.unique(df_train["LABEL"]), df_train["LABEL"])
@@ -182,7 +184,7 @@ def train_eval():
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, min_lr=CFG.min_lr)
 
-    log_data = {'epoch': [], 'train_loss': [], 'train_f1': [], 'val_loss': [], 'val_f1_micro': [], 'classification_report': []}
+    log_data = {'epoch': [], 'train_loss': [], 'train_f1': [], 'val_loss': [], 'val_f1_micro': [], 'val_f1_macro': [],'classification_report': []}
 
     for epoch in range(start_epoch, CFG.epochs + start_epoch):
         global_step = len(train_loader) * epoch
