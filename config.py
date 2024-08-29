@@ -22,7 +22,7 @@ class CFG:
     only_dist = False       #Abl
     loss_fn = "Focal"       #Abl
 
-    no_release = True      #Abl False
+    no_release = False      #Abl False
 
     experiment_name = f"2{model_type}_{loss_fn}_seqlen{sequence_length}_{'release_' if not no_release else 'no_release_'}{'SAM_' if sam else ''}{'joints1_' if add_joints1 else ''}{'joints2_' if add_joints2 else ''}{'dist' if only_dist else ''}"
 
