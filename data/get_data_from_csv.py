@@ -5,19 +5,21 @@ from config import CFG
 curr_dir = os.path.dirname(__file__)
 
 #train_ids = [0,2] #25
-train_ids = [0, 2, 5, 7, 9, 10, 11, 13, 21, 22, 23]
-val_ids = [6, 12, 20]
+#train_ids = [0, 2, 5, 7, 9, 10, 11, 13, 21, 22, 23]
+#val_ids = [6, 12, 20]
+train_ids = [1, 21, 51, 71, 91, 101, 111, 131, 211, 221, 231, 61, 121, 201]
+val_ids = [2, 22, 52, 72, 92, 102, 112, 132, 212, 222, 232, 62, 122, 202]
 #val_ids = [6] #60
 
 
 def dfs_from_ids(ids, get_augmented=True):
     dfs = []
     for i in ids:
-        df = pd.read_csv(os.path.join(curr_dir, f"graphdata/{i}_mdc04_mtc05_Train_original.csv"), index_col=0)
+        df = pd.read_csv(os.path.join(curr_dir, f"graphdata3/{i}_mdc04_mtc05_Train_original.csv"), index_col=0)
         if get_augmented:
-            df_f0 = pd.read_csv(os.path.join(curr_dir, f"graphdata/{i}_mdc04_mtc05_Train_flip-vert.csv"), index_col=0)
-            df_f1 = pd.read_csv(os.path.join(curr_dir, f"graphdata/{i}_mdc04_mtc05_Train_flip-hor.csv"), index_col=0)
-            df_f2 = pd.read_csv(os.path.join(curr_dir, f"graphdata/{i}_mdc04_mtc05_Train_flip-hor-vert.csv"), index_col=0)
+            df_f0 = pd.read_csv(os.path.join(curr_dir, f"graphdata3/{i}_mdc04_mtc05_Train_flip-vert.csv"), index_col=0)
+            df_f1 = pd.read_csv(os.path.join(curr_dir, f"graphdata3/{i}_mdc04_mtc05_Train_flip-hor.csv"), index_col=0)
+            df_f2 = pd.read_csv(os.path.join(curr_dir, f"graphdata3/{i}_mdc04_mtc05_Train_flip-hor-vert.csv"), index_col=0)
 
             dfs.extend([df, df_f0, df_f1, df_f2])
         else:
