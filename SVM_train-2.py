@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score, classification_report, precision_rec
 train_ids = [ 0, 2, 5, 7, 9, 10, 11, 13, 21, 22, 23] #1 21, 51, 71, 91, 101, 111, 131, 211, 221, 231, 61, 121, 201]
 val_ids = [6, 12, 20]#2, 22, 52, 72, 92, 102, 112, 132, 212, 222, 232, 62, 122, 202]
 
-curr_dir = r"/teamspace/studios/this_studio/Hand-Gesture-Recognition-in-manual-assembly-tasks-using-GCN-main/data"
+curr_dir = r"/root/Hand-Gesture-Recognition-in-manual-assembly-tasks-using-GCN-main/data"
 
 def dfs_from_ids(ids, get_augmented=True):
     """Load data from specified IDs with optional data augmentation."""
