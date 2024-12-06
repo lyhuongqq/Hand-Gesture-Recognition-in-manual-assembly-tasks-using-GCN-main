@@ -11,18 +11,18 @@ import matplotlib.pyplot as plt
 import random
 from utils import adj_mat
 
+
 def df_to_numpy(df):
   x_elems = df.drop("LABEL", axis=1).values
   x = [make_tuple(elem) for elem in x_elems for elem in elem]
   x = np.array(x)
   x = x.reshape(len(x_elems), 3*21)
-
   lb = sklearn.preprocessing.LabelBinarizer().fit(CFG.classes)
   y = np.array(df["LABEL"]).reshape(-1,1)
   y_ohe = lb.transform(y)
-
   train_data_numpy = (x, y_ohe)
   return train_data_numpy
+
 
 class HandPoseDatasetNumpy(Dataset):
     def __init__(self, data, distances=CFG.only_dist):
