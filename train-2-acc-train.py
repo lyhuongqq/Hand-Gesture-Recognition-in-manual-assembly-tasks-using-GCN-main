@@ -13,7 +13,8 @@ from sklearn.utils import class_weight
 
 from model import lstm, stconv, aagcn, SAM, loss, msg3d
 from data.handpose_dataset import HandPoseDatasetNumpy, df_to_numpy
-from data.get_data_from_csv import get_train_data, get_val_data
+#from data.get_data_from_csv import get_train_data, get_val_data
+from data.get_data_from_csv_smotek_val_80_2 import get_train_data, get_val_data
 from config import CFG
 from utils import training_supervision, adj_mat
 from torchinfo import summary
@@ -30,9 +31,21 @@ print(device)
 curr_dir = os.path.dirname(__file__)
 os.makedirs(f"{curr_dir}/trained_models/{CFG.experiment_name}", exist_ok=True)
 
-df_train = get_train_data()
+from sklearn.model_selection import train_test_split
+vid_ids = [0, 2, 5, 7, 9, 10, 11, 13, 21, 22, 23,6, 12, 20]
+# Split video IDs into train and validation
+train_ids, val_ids = train_test_split(vid_ids, test_size=0.2, random_state=42)
+
+df_train =  get_train_data()
 df_train = df_train.replace("Postion", "Position")
 df_val = get_val_data()
+# Load train and validation data
+#df_train = get_train_data(train_ids)
+#df_val = get_val_data(val_ids)
+
+print("[DEBUG] Train IDs:", train_ids)
+print("[DEBUG] Validation IDs:", val_ids)
+
 
 if CFG.no_release:
     df_train = df_train.replace("Release", "Position")
@@ -134,25 +147,74 @@ def eval_func(model, criterion, data_loader, epoch, log_data):
     groundtruth = np.concatenate(groundtruth)
     f1_val_micro = f1_score(groundtruth, preds, average="micro")
     
-    report = classification_report(groundtruth, preds, target_names=CFG.classes, digits=3, output_dict=True)
+    labels = [i for i in range(len(CFG.classes))]
+    report = classification_report(groundtruth, preds, target_names=CFG.classes, labels=list(range(len(CFG.classes))),digits=3, output_dict=True)
+    #labels = [i for i in range(len(CFG.classes))]
+    print(classification_report(groundtruth, preds, target_names=CFG.classes, labels=list(range(len(CFG.classes))), digits=3,output_dict=True))
+    #report = classification_report(groundtruth, preds, target_names=CFG.classes, digits=3, output_dict=True)
     log_data['val_loss'].append(loss_total / iters)
     log_data['val_f1_micro'].append(f1_val_micro)
     log_data['classification_report'].append(report)
+
+    #print("[DEBUG] Predictions distribution:")
+    #print(pd.Series(preds).value_counts())
+    #print("[DEBUG] Ground truth distribution:")
+    #print(pd.Series(groundtruth).value_counts())
     
     writer.add_scalar('Loss/Validation', loss_total / iters, global_step)
     return loss_total, preds, groundtruth
 
+
 train_numpy = df_to_numpy(df_train)
 val_numpy = df_to_numpy(df_val)
+
+print("[DEBUG] Unique labels in validation set after preprocessing:")
+print(df_val["LABEL"].unique())
 
 train_set = HandPoseDatasetNumpy(train_numpy)
 val_set = HandPoseDatasetNumpy(val_numpy)
 
-train_loader = DataLoader(train_set, batch_size=CFG.batch_size, drop_last=True, shuffle=True, pin_memory=True)
+#for i in range(10):  # Check the first 10 samples
+#    print("[DEBUG] Training sample:", train_set[i])
+print("[DEBUG] Resampled training data distribution:")
+print(df_train["LABEL"].value_counts())
+
+print("[DEBUG] Resampled validation data distribution:")
+print(df_val["LABEL"].value_counts())
+
+def custom_collate_fn(batch):
+    features, labels = zip(*batch)  # Unpack the batch into features and labels
+    
+    # Convert features and labels to torch.Tensor
+    #features = [torch.tensor(f, dtype=torch.float32) for f in features]
+    #labels = [torch.tensor(l, dtype=torch.long) for l in labels]
+
+    #print(f"[DEBUG] Batch labels: {labels}")
+    # Stack features and labels
+    features = torch.stack(features)  # Stack features into a single tensor
+    labels = torch.stack(labels)      # Stack labels into a single tensor
+    
+    return features, labels
+
+print(f"[DEBUG] Resampled training data distribution:\n{train_set[1]}")
+print(f"[DEBUG] Resampled validation data distribution:\n{val_set[1]}")
+
+train_loader = DataLoader(train_set, batch_size=CFG.batch_size, drop_last=True, shuffle=True, collate_fn=custom_collate_fn,pin_memory=True) #collate_fn=custom_collate_fn
 val_loader = DataLoader(val_set, batch_size=CFG.batch_size, drop_last=True, pin_memory=True)
 
-print(f"[INFO] TRAINING ON {len(train_set)} DATAPOINTS")
-print(f"[INFO] VALIDATION ON {len(val_set)} DATAPOINTS")
+print(f"[INFO] TRAINING ON {len(train_loader)} DATAPOINTS")
+print(f"[INFO] VALIDATION ON {len(val_loader)} DATAPOINTS")
+
+for inputs, labels in train_loader:
+    print("[DEBUG] Train batch labels:", labels)
+    print("[DEBUG] Unique train batch labels:", labels.unique())
+    break
+
+for inputs, labels in val_loader:
+    print("[DEBUG] Validation batch labels:", labels)
+    print("[DEBUG] Unique validation batch labels:", labels.unique())
+    break
+
 
 writer = SummaryWriter(f'D:\mtm regconition/{CFG.experiment_name}')
 
@@ -233,7 +295,7 @@ def train_eval():
             writer.add_histogram(f"ModelWeights/{n}", p, global_step)
 
         print("[EVAL] Classification Report")
-        print(classification_report(gt_val, preds_val, target_names=CFG.classes, digits=3))
+        print(classification_report(gt_val, preds_val, target_names=CFG.classes, labels=list(range(len(CFG.classes))),digits=3,zero_division=0))
 
         scheduler.step(val_loss)
 
@@ -292,6 +354,19 @@ def train_eval():
     detailed_log_df = pd.DataFrame(detailed_log_data)
     detailed_log_df.to_csv(f"{curr_dir}/trained_models/{CFG.experiment_name}/detailed_training_log.csv", index=False)
     print("[INFO] Detailed training log saved to CSV")
+
+    all_preds = []
+    all_labels = []
+    for features, labels in val_loader:
+      outputs = model(features)
+      preds = torch.argmax(outputs, dim=1)
+      all_preds.extend(preds.cpu().numpy())
+      all_labels.extend(labels.cpu().numpy())
+
+# Analyze predictions
+    print("[DEBUG] Predictions distribution:", pd.Series(all_preds).value_counts())
+    print("[DEBUG] Ground truth distribution:", pd.Series(all_labels).value_counts())
+
 
 if __name__ == "__main__":
     train_eval()
