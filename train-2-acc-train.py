@@ -14,7 +14,8 @@ from sklearn.utils import class_weight
 from model import lstm, stconv, aagcn, SAM, loss, msg3d
 from data.handpose_dataset import HandPoseDatasetNumpy, df_to_numpy
 #from data.get_data_from_csv import get_train_data, get_val_data
-from data.get_data_from_csv_smotek_val_80_2 import get_train_data, get_val_data
+#from data.get_data_from_csv_smotek_val_80_2 import get_train_data, get_val_data
+from data.get_data_from_csv_smotek_val_80_all import get_train_data, get_val_data
 from config import CFG
 from utils import training_supervision, adj_mat
 from torchinfo import summary
@@ -355,17 +356,17 @@ def train_eval():
     detailed_log_df.to_csv(f"{curr_dir}/trained_models/{CFG.experiment_name}/detailed_training_log.csv", index=False)
     print("[INFO] Detailed training log saved to CSV")
 
-    all_preds = []
-    all_labels = []
-    for features, labels in val_loader:
-      outputs = model(features)
-      preds = torch.argmax(outputs, dim=1)
-      all_preds.extend(preds.cpu().numpy())
-      all_labels.extend(labels.cpu().numpy())
+    #all_preds = []
+    #all_labels = []
+    #for features, labels in val_loader:
+    #  outputs = model(features)
+    #  preds = torch.argmax(outputs, dim=1)
+    #  all_preds.extend(preds.cpu().numpy())
+    #  all_labels.extend(labels.cpu().numpy())
 
 # Analyze predictions
-    print("[DEBUG] Predictions distribution:", pd.Series(all_preds).value_counts())
-    print("[DEBUG] Ground truth distribution:", pd.Series(all_labels).value_counts())
+    #print("[DEBUG] Predictions distribution:", pd.Series(all_preds).value_counts())
+    #print("[DEBUG] Ground truth distribution:", pd.Series(all_labels).value_counts())
 
 
 if __name__ == "__main__":
