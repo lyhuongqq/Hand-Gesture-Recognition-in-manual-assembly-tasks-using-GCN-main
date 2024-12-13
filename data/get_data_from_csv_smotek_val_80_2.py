@@ -77,13 +77,23 @@ def get_train_data():
 
     return df_train_resampled
 
+#def get_val_data():
+#    val_dfs = dfs_from_ids(val_ids)
+#    df_val = pd.concat(val_dfs)
+#    print("[DEBUG] Combined validation data shape:", df_val.shape)
+
+    # Validation data is not resampled
+#    return df_val
+
 def get_val_data():
     val_dfs = dfs_from_ids(val_ids)
     df_val = pd.concat(val_dfs)
-    print("[DEBUG] Combined validation data shape:", df_val.shape)
+    print("[DEBUG] Combined val data shape:", df_val.shape)
+        # Resample with SMOTETomek
+    df_val_resampled = apply_smote_tomek(df_val)
+    print("[DEBUG] Resampled val data shape:", df_val_resampled.shape)
 
-    # Validation data is not resampled
-    return df_val
+    return df_val_resampled
 
 if __name__ == "__main__":
     print("[INFO] Loading and processing training data...")
