@@ -39,6 +39,7 @@ vid_ids = [0, 2, 5, 7, 9, 10, 11, 13, 21, 22, 23,6, 12, 20]
 #train_ids, val_ids = train_test_split(vid_ids, test_size=0.2, random_state=42)
 all_ids = [0, 2, 5, 7, 9, 10, 11, 13, 21, 22, 23, 6, 12, 20]
 train_ratio = 0.8
+all_ids=[63,67,69,'062',70,74,64,66]
 #df_train =  get_train_data()
 #df_train = df_train.replace("Postion", "Position")
 #df_val = get_val_data()
