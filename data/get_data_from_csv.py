@@ -10,7 +10,8 @@ curr_dir = os.path.dirname(__file__)
 train_ids = [1, 21, 51, 71, 91, 101, 111, 131, 211, 221, 231, 61, 121, 201]
 val_ids = [2, 22, 52, 72, 92, 102, 112, 132, 212, 222, 232, 62, 122, 202]
 #val_ids = [6] #60
-
+train_ids = [63,67,69,'062',70,74,75]
+val_ids = [64,66,71]
 
 def dfs_from_ids(ids, get_augmented=True):
     dfs = []
