@@ -75,7 +75,7 @@ class STConvOpolkaModel(torch.nn.Module):
     def __init__(self, in_channels, spatial_channels, out_channels, classes):
         super(STConvOpolkaModel, self).__init__()
     
-        self.norm_adj = torch.Tensor(utils.adj_mat.get_norm_adj_mat()).cpu() #cuda
+        self.norm_adj = torch.Tensor(utils.adj_mat.get_norm_adj_mat()).cuda() #cuda cpu
         self.block1 = STGCNBlock_Opolka(num_nodes = 21, in_channels=in_channels, spatial_channels=spatial_channels, out_channels=out_channels)
         self.block2 = STGCNBlock_Opolka(num_nodes = 21, in_channels=out_channels, spatial_channels=spatial_channels, out_channels=out_channels)
         self.block3 = STGCNBlock_Opolka(num_nodes = 21, in_channels=out_channels, spatial_channels=spatial_channels, out_channels=out_channels)
