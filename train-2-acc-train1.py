@@ -16,7 +16,8 @@ from data.handpose_dataset import HandPoseDatasetNumpy, df_to_numpy
 #from data.get_data_from_csv import get_train_data, get_val_data
 #from data.get_data_from_csv_smotek_val_80_2 import get_train_data, get_val_data
 #from data.get_data_from_csv_smotek_val_80_all import get_train_data, get_val_data
-from data.get_data_from_csv_smotek_val_80_borderline_fixed import get_train_val_data #get_train_data, get_val_data
+#from data.get_data_from_csv_smotek_val_80_borderline_fixed import get_train_val_data #get_train_data, get_val_data
+from data.get_data_from_csv_dbmconcen_smote_val_80_fixed import get_train_val_data
 from config import CFG
 from utils import training_supervision, adj_mat
 #from torchinfo import summary
