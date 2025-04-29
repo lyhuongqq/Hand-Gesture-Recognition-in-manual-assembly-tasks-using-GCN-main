@@ -88,8 +88,8 @@ def train_func(model, data_loader, criterion, optimizer, scheduler, epoch):
         
         current_lr = optimizer.param_groups[0]['lr']
 
-        preds.append(last_out.cuda().detach().numpy()) #cuda
-        groundtruth.append(last_label.cuda().detach().numpy()) #cuda cpu
+        preds.append(last_out.cpu().detach().numpy()) #cuda - cpu
+        groundtruth.append(last_label.cpu().detach().numpy()) #cuda cpu
 
         loss_total += loss
         global_step += 1
@@ -121,8 +121,8 @@ def eval_func(model, criterion, data_loader, epoch):
             last_out = model(inputs)
             loss = criterion(last_out, last_label)
 
-            preds.append(last_out.cuda().detach().numpy()) #cuda
-            groundtruth.append(last_label.cuda().detach().numpy()) #cuda
+            preds.append(last_out.cpu().detach().numpy()) # fixed cpu 
+            groundtruth.append(last_label.cpu().detach().numpy()) #fixed cpu
             loss_total += loss
 
             if i%CFG.print_freq == 1 or i == iters-1:
